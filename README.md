@@ -9,15 +9,12 @@ This is a comprehensive guide on compiling Chromium for any Android Automotive v
 ### Requirements
 
 - **Operating System:** A desktop or laptop running Linux; **Ubuntu recommended**.
-- **Hardware:** A powerful multi-core CPU, as the compilation process can take from 18 hours to several days.
-  - Minimum of **24GB of RAM** is recommended.
-  - Minimum of **200GB of hard drive space** is recommended.
-  - SSD/Flash storage is required to complete this before 2087
+- **Hardware:** Use your best.
 - **Account:** A **Google Play Console** account to upload the build for Internal Testing. Sign up by [clicking here](https://play.google.com/console).
 
 ### Resources
 
-- [Chromium AAOS GitHub Repository](https://github.com/DanielBoca/chromium_aaos)
+- [Chromium AAOS GitHub Repository](https://github.com/DanielBoca/chromium_aaos_gmev)
 - [Official Chromium Android Build Instructions](https://chromium.googlesource.com/chromium/src/+/main/docs/android_build_instructions.md)
 
 ## 2. Setting Up Directories & Paths
@@ -31,9 +28,9 @@ $CHROMIUMBUILD
 |--chromium/
 |  |--depot_tools/
 |  |--src/ (Chromium source code)
-|--chromium_aaos/ (this repository with scripts and patch)
+|--chromium_aaos_gmev/ (this repository with scripts and patch)
 |  |--automotive.patch
-|  |--pull_latest.sh
+|  |--pull_release.sh
 |  |--build_release.sh
 |  |--Release_arm64.gn
 |  |--Release_X64.gn
@@ -172,7 +169,7 @@ keytool -genkeypair -v -keystore store.jks -alias chromium-key -keyalg RSA -keys
 Clone the GitHub repository containing the patch and build scripts into `$CHROMIUMBUILD`:
 
 ```bash
-git clone https://github.com/DanielBoca/chromium_aaos.git $CHROMIUMBUILD/chromium_aaos
+git clone https://github.com/DanielBoca/chromium_aaos_gmev.git $CHROMIUMBUILD/chromium_aaos_gmev
 ```
 
 **Important**: This repository includes the AAOS patch with critical fixes:
@@ -187,27 +184,21 @@ git clone https://github.com/DanielBoca/chromium_aaos.git $CHROMIUMBUILD/chromiu
 
 ### Edit Release_arm64.gn
 
-Open the `$CHROMIUMBUILD/chromium_aaos/Release_arm64.gn` file and replace the string **CHANGEME** with a unique identifier (e.g., your username, or some other string that is unique to you). This is critical for preventing issues when uploading to the Google Play Console.
+Open the `$CHROMIUMBUILD/chromium_aaos_gmev/Release_arm64.gn` file and replace the string **CHANGEME** with a unique identifier (e.g., your username, or some other string that is unique to you). This is critical for preventing issues when uploading to the Google Play Console.
 
-### Run pull_latest.sh
+### Run pull_release.sh
 
 Navigate to the chromium directory and run the update script to fetch the latest Chromium source and apply the AAOS patch:
 
 ```bash
 cd $CHROMIUMBUILD/chromium
-$CHROMIUMBUILD/chromium_aaos/pull_latest.sh
+$CHROMIUMBUILD/chromium_aaos_gmev/pull_release.sh
 ```
 
 The script will automatically:
-1. Update Chromium source to the latest version
-2. Find and apply the AAOS patch from `$CHROMIUMBUILD/chromium_aaos/automotive.patch`
+1. Update Chromium source to pinned/tested version.
+2. Apply the AAOS patch from `$CHROMIUMBUILD/chromium_aaos_gmev/automotive.patch`
 3. Run gclient sync and hooks
-
-If you need to use a different patch file, you can specify it as an argument:
-
-```bash
-$CHROMIUMBUILD/chromium_aaos/pull_latest.sh /path/to/custom.patch
-```
 
 ### Generate GN Arguments and Configure Build
 
@@ -220,11 +211,11 @@ gn args out/Release_arm64
 
 ### Edit args.gn
 
-Navigate to the newly created directory `$CHROMIUMBUILD/chromium/src/out/Release_arm64` and open the `args.gn` file with a text editor. Copy the contents of the `$CHROMIUMBUILD/chromium_aaos/Release_arm64.gn` file (with your CHANGEME edits) and paste it into the `args.gn` file.
+Navigate to the newly created directory `$CHROMIUMBUILD/chromium/src/out/Release_arm64` and open the `args.gn` file with a text editor. Copy the contents of the `$CHROMIUMBUILD/chromium_aaos_gmev/Release_arm64.gn` file (with your CHANGEME edits) and paste it into the `args.gn` file.
 
 ### Configure build_release.sh (Optional)
 
-If your Chromium source is not located at the default path, open the `$CHROMIUMBUILD/chromium_aaos/build_release.sh` file and update the `DEFAULT_SRC` variable to point to your Chromium source directory, or pass the path as an argument when running the script.
+If your Chromium source is not located at the default path, open the `$CHROMIUMBUILD/chromium_aaos_gmev/build_release.sh` file and update the `DEFAULT_SRC` variable to point to your Chromium source directory, or pass the path as an argument when running the script.
 
 ## 7. Compiling Chromium
 
@@ -232,10 +223,10 @@ This is the most time-consuming step.
 
 ### Run the Build Script
 
-Run the build script from the chromium_aaos directory:
+Run the build script from the chromium_aaos_gmev directory:
 
 ```bash
-cd $CHROMIUMBUILD/chromium_aaos
+cd $CHROMIUMBUILD/chromium_aaos_gmev
 ./build_release.sh
 ```
 
