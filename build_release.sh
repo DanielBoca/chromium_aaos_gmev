@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default source path
-DEFAULT_SRC="/$CHROMIUMBUILD/chromium/src"
+DEFAULT_SRC="$CHROMIUMBUILD/chromium/src"
 
 # Check if an argument is provided, otherwise use the default
 if [[ -n "$1" ]]; then
@@ -36,28 +36,40 @@ else
    exit 1
 fi
 
+gn gen out/Release_arm64
+
+TARGET_DIR="${SRC}/out/${BUILD_FOLDER}"
+TARGET_ARGS="${TARGET_DIR}/args.gn"
+SOURCE_GN="${CHROMIUMBUILD}/chromium_aaos_gmev/${BUILD_FOLDER}.gn"
+
+if [[ -f "${SOURCE_GN}" && -d "${TARGET_DIR}" ]]; then
+    cp -f "${SOURCE_GN}" "${TARGET_ARGS}"
+    echo "Copied ${SOURCE_GN} to ${TARGET_ARGS}"
+elif [[ -f "${TARGET_ARGS}" ]]; then
+    echo "Using existing ${TARGET_ARGS}"
+else
+    echo "ERROR: ${TARGET_ARGS} not found. Run: gn args out/${BUILD_FOLDER}"
+    exit 1
+fi
+
 VERSION_FILE="${SRC}/chrome/VERSION"
 
 # Check if the version file exists in the correct location
 if [[ -f ${VERSION_FILE} ]]; then
     echo "Updating version file: ${VERSION_FILE}"
 
-    # MAJOR
-    MAJOR=$(head -n 1 ${VERSION_FILE})
-    version=${MAJOR#*_}
-    version=$((version + 1))
-    sed -i "1s/.*/MAJOR=${version}/" ${VERSION_FILE}
-    echo "Updated MAJOR version to ${version}"
-
-    # BUILD
-    BUILD=$(sed -n '3p' < ${VERSION_FILE})
-    build_version=${BUILD#*_}
-    build_version=$((build_version + 1))
-    sed -i "s/^BUILD.*$/BUILD=${build_version}/" ${VERSION_FILE}
-    echo "Updated BUILD version to ${build_version}"
-
-    cp ${VERSION_FILE} ~/chromium/VERSION
-    
+    # PATCH (increment patch, not MAJOR)
+    PATCH_LINE=$(grep -n '^PATCH=' "${VERSION_FILE}" | cut -d: -f1 || true)
+    if [[ -n "${PATCH_LINE}" ]]; then
+        PATCH=$(sed -n "${PATCH_LINE}p" < "${VERSION_FILE}")
+        patch_version=${PATCH#*=}
+        patch_version=$((patch_version + 1))
+        sed -i "s/^PATCH=.*$/PATCH=${patch_version}/" "${VERSION_FILE}"
+        echo "Updated PATCH version to ${patch_version}"
+    else
+        echo "PATCH line not found in ${VERSION_FILE}; skipping PATCH update."
+    fi
+  
     echo "Current version details:"
     cat ${VERSION_FILE}
 else
@@ -66,7 +78,7 @@ fi
 
 # Build
 echo "Starting build process. This is a very long process..."
-autoninja -C out/${BUILD_FOLDER} monochrome_public_bundle
+autoninja -C out/${BUILD_FOLDER} chrome_public_bundle
 if [[ $? -ne 0 ]]; then
     echo "Build failed. Exiting."
     exit 1
@@ -74,7 +86,7 @@ fi
 echo "Build completed successfully."
 
 # Sign
-AAB_FILE="${SRC}/out/${BUILD_FOLDER}/apks/MonochromePublic6432.aab"
+AAB_FILE="${SRC}/out/${BUILD_FOLDER}/apks/ChromePublic.aab"
 
 if [[ -f ${AAB_FILE} ]]; then
     echo "Signing AAB file: ${AAB_FILE}"

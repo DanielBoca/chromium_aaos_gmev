@@ -1,6 +1,6 @@
 target_os = "android"
 target_cpu = "x64" # See "Figuring out target_cpu" below
-chrome_public_manifest_package = "com.CHANGEME.browser"
+chrome_public_manifest_package = "com.CHANGEME.chromium"
 is_debug = false
 is_java_debug = false
 is_component_build = false
@@ -10,3 +10,6 @@ media_use_ffmpeg = true
 media_use_libvpx = true
 proprietary_codecs = true
 ffmpeg_branding = "Chrome"
+chrome_pgo_phase = 0
+symbol_level = 0
+android_static_analysis = "off"

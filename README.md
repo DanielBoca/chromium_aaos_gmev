@@ -51,6 +51,16 @@ Go into the `~/.bashrc` file and add the following lines at the bottom:
 export CHROMIUMBUILD=/your/base/directory/for/build
 export ANDROID_SDK_ROOT=$CHROMIUMBUILD/Android/Sdk
 export PATH=$PATH:$CHROMIUMBUILD/Android/Sdk/build-tools/35.0.0:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$CHROMIUMBUILD/chromium/depot_tools
+export GCLIENT_SUPPRESS_GIT_VERSION_WARNING=1
+```
+
+### Create swap file for sis OOM
+```bash
+sudo fallocate -l 16G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+# persist in /etc/fstab: /swapfile none swap sw 0 0
 ```
 
 ### Activate Variables
@@ -191,7 +201,6 @@ Open the `$CHROMIUMBUILD/chromium_aaos_gmev/Release_arm64.gn` file and replace t
 Navigate to the chromium directory and run the update script to fetch the latest Chromium source and apply the AAOS patch:
 
 ```bash
-cd $CHROMIUMBUILD/chromium
 $CHROMIUMBUILD/chromium_aaos_gmev/pull_release.sh
 ```
 
@@ -200,26 +209,11 @@ The script will automatically:
 2. Apply the AAOS patch from `$CHROMIUMBUILD/chromium_aaos_gmev/automotive.patch`
 3. Run gclient sync and hooks
 
-### Generate GN Arguments and Configure Build
-
-Run the following command in Terminal. When the vi editor pops up, you can exit it immediately, as you will edit the file next:
-
-```bash
-cd $CHROMIUMBUILD/chromium/src
-gn args out/Release_arm64
-```
-
 ### Edit args.gn
 
-Navigate to the newly created directory `$CHROMIUMBUILD/chromium/src/out/Release_arm64` and open the `args.gn` file with a text editor. Copy the contents of the `$CHROMIUMBUILD/chromium_aaos_gmev/Release_arm64.gn` file (with your CHANGEME edits) and paste it into the `args.gn` file.
-
-### Configure build_release.sh (Optional)
-
-If your Chromium source is not located at the default path, open the `$CHROMIUMBUILD/chromium_aaos_gmev/build_release.sh` file and update the `DEFAULT_SRC` variable to point to your Chromium source directory, or pass the path as an argument when running the script.
+Change your Release_arm64.gn (with your CHANGEME edits). It will be copied in chrome out folder.
 
 ## 7. Compiling Chromium
-
-This is the most time-consuming step.
 
 ### Run the Build Script
 

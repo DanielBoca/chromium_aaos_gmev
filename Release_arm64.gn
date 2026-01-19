@@ -11,3 +11,5 @@ media_use_libvpx = true
 proprietary_codecs = true
 ffmpeg_branding = "Chrome"
 chrome_pgo_phase = 0
+symbol_level = 0
+android_static_analysis = "off"
