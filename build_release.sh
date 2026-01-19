@@ -90,7 +90,7 @@ AAB_FILE="${SRC}/out/${BUILD_FOLDER}/apks/ChromePublic.aab"
 
 if [[ -f ${AAB_FILE} ]]; then
     echo "Signing AAB file: ${AAB_FILE}"
-    apksigner sign --ks $HOME/Documents/KeyStore/store.jks --min-sdk-version 24 ${AAB_FILE}
+    apksigner sign --ks $CHROMIUMBUILD/Documents/KeyStore/store.jks --min-sdk-version 24 ${AAB_FILE}
     if [[ $? -eq 0 ]]; then
         echo "Signing completed successfully."
     else
