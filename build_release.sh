@@ -78,7 +78,7 @@ fi
 
 # Build
 echo "Starting build process. This is a very long process..."
-autoninja -C out/${BUILD_FOLDER} chrome_public_bundle
+autoninja -C out/${BUILD_FOLDER} -j12 chrome_public_bundle
 if [[ $? -ne 0 ]]; then
     echo "Build failed. Exiting."
     exit 1
