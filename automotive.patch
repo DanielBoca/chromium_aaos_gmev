@@ -1,0 +1,149 @@
+diff --git a/DEPS b/DEPS
+index e930cb089b..a5c64838f7 100644
+--- a/DEPS
++++ b/DEPS
+@@ -160,7 +160,7 @@ vars = {
+   'checkout_clang_coverage_tools': False,
+ 
+   # Fetch the pgo profiles to optimize official builds.
+-  'checkout_pgo_profiles': False,
++  'checkout_pgo_profiles': True,
+ 
+   # Fetch clang-tidy into the same bin/ directory as our clang binary.
+   'checkout_clang_tidy': False,
+diff --git a/android_webview/expectations/system_webview_32_64_bundle.AndroidManifest.expected b/android_webview/expectations/system_webview_32_64_bundle.AndroidManifest.expected
+index ca072e61ee..4044324698 100644
+--- a/android_webview/expectations/system_webview_32_64_bundle.AndroidManifest.expected
++++ b/android_webview/expectations/system_webview_32_64_bundle.AndroidManifest.expected
+@@ -27,6 +27,7 @@
+         android:name="com.google.android.gms.common.api.GoogleApiActivity"
+         android:exported="false"
+         android:theme="@android:style/Theme.Translucent.NoTitleBar">
++        <meta-data android:name="distractionOptimized" android:value="true"/>
+     </activity>  # DIFF-ANCHOR: ea1a94af
+     <activity  # DIFF-ANCHOR: a4438884
+         android:name="org.chromium.android_webview.devui.MainActivity"
+@@ -65,6 +66,7 @@
+         android:enabled="false"
+         android:targetActivity="org.chromium.android_webview.devui.MainActivity">
+     </activity-alias>  # DIFF-ANCHOR: b7cc06e9
++    <meta-data android:name="distractionOptimized" android:value="true"/>
+     <meta-data android:name="$PACKAGE.WebViewLibrary" android:value="libwebviewchromium.so"/>
+     <meta-data android:name="PIN_SHARED_LIBS_FIRST" android:value="false"/>
+     <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+diff --git a/android_webview/expectations/system_webview_64_bundle.AndroidManifest.expected b/android_webview/expectations/system_webview_64_bundle.AndroidManifest.expected
+index 5859daad69..546067b287 100644
+--- a/android_webview/expectations/system_webview_64_bundle.AndroidManifest.expected
++++ b/android_webview/expectations/system_webview_64_bundle.AndroidManifest.expected
+@@ -64,6 +64,7 @@
+         android:enabled="false"
+         android:targetActivity="org.chromium.android_webview.devui.MainActivity">
+     </activity-alias>  # DIFF-ANCHOR: b7cc06e9
++    <meta-data android:name="distractionOptimized" android:value="true"/>
+     <meta-data android:name="$PACKAGE.WebViewLibrary" android:value="libwebviewchromium.so"/>
+     <meta-data android:name="PIN_SHARED_LIBS_FIRST" android:value="false"/>
+     <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+diff --git a/android_webview/nonembedded/java/AndroidManifest.xml b/android_webview/nonembedded/java/AndroidManifest.xml
+index 2271b19e03..3e5c3ec636 100644
+--- a/android_webview/nonembedded/java/AndroidManifest.xml
++++ b/android_webview/nonembedded/java/AndroidManifest.xml
+@@ -22,6 +22,8 @@ by a child template that "extends" this file.
+                   android:required="false" />
+     <uses-feature android:name="android.software.leanback"
+                   android:required="false" />
++    <uses-feature android:name="android.hardware.type.automotive"
+++                 android:required="true" />
+ 
+     <uses-feature android:glEsVersion="0x00030000" />
+ 
+@@ -29,8 +31,19 @@ by a child template that "extends" this file.
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+ 
++    <!-- AAOS Storage Permissions - Critical for profile/cache data -->
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++    <!-- Android 13+ storage permissions -->
++    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
++    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
++    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
++    <!-- Wake lock for background sync -->
++    <uses-permission android:name="android.permission.WAKE_LOCK" />
++
+     <!-- Required by WebView Developer UI only -->
+     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
++    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+ 
+     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+     <!-- Required to run the foreground service-->
+@@ -39,6 +52,8 @@ by a child template that "extends" this file.
+     <application android:label="{{ application_label|default('Android System WebView') }}"
+                  android:icon="@{{manifest_package|default('com.android.webview')}}:drawable/icon_webview"
+                  android:name="{{ application_name|default('org.chromium.android_webview.nonembedded.WebViewApkApplication') }}"
++                 android:directBootAware="true"
++                 android:requiredForAllUsers="true"
+                  android:multiArch="true"
+                  {% if force_32_bit is defined and force_32_bit == 'true' %}
+                  android:use32bitAbi="true"
+diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
+index 0524eba10d..844609c9dc 100644
+--- a/chrome/android/java/AndroidManifest.xml
++++ b/chrome/android/java/AndroidManifest.xml
+@@ -168,6 +168,20 @@ by a child template that "extends" this file.
+ 
+     <uses-permission android:name="com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS" />
+ 
++    <!-- AAOS Critical Storage Permissions -->
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++    <!-- Android 13+ storage permissions -->
++    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
++    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
++    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
++    <!-- Background services -->
++    <uses-permission android:name="android.permission.WAKE_LOCK" />
++    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
++    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
++    <!-- POST_NOTIFICATIONS for Android 13+ -->
++    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
++
+     {% block extra_uses_permissions %}
+     {% endblock %}
+ 
+@@ -184,6 +198,7 @@ by a child template that "extends" this file.
+       all applications and needs to be disabled manually.
+     -->
+     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
++    <uses-feature android:name="android.hardware.type.automotive" android:required="true" />
+ 
+     {% block extra_keyset_definitions %}
+     {% endblock %}
+@@ -211,6 +226,8 @@ by a child template that "extends" this file.
+       <application android:name="{% block application_name %}org.chromium.chrome.browser.base.SplitChromeApplication{% endblock %}"
+         android:icon="@drawable/ic_launcher"
+         android:roundIcon="@drawable/ic_launcher_round"
++        android:directBootAware="true"
++        android:requiredForAllUsers="true"
+         android:label="{% block application_label %}@string/app_name{% endblock %}"
+         android:memtagMode="async"
+         android:largeHeap="false"
+@@ -610,6 +627,7 @@ by a child template that "extends" this file.
+                 android:resource="@xml/launchershortcuts" />
+             {{ self.supports_vr() }}
+             {{ self.extra_web_rendering_activity_definitions() }}
++            <meta-data android:name="distractionOptimized" android:value="true"/>
+         </activity-alias>
+         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
+             android:theme="@style/Theme.Chromium.TabbedMode"
+diff --git a/chrome/android/java/AndroidManifest_trichrome_library.xml b/chrome/android/java/AndroidManifest_trichrome_library.xml
+index 2a9b4fab4e..a273634091 100644
+--- a/chrome/android/java/AndroidManifest_trichrome_library.xml
++++ b/chrome/android/java/AndroidManifest_trichrome_library.xml
+@@ -17,6 +17,7 @@ Note: This is a jinja2 template, processed at build time into the final manifest
+     <uses-feature android:glEsVersion="0x00020000" />
+     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+     <uses-feature android:name="android.software.leanback" android:required="false" />
++    <uses-feature android:name="android.hardware.type.automotive" android:required="true" />
+ 
+     <!-- TODO(torne): we should specify an icon, roundIcon, and label from resources. -->
+     <application
