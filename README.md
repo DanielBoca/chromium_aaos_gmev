@@ -50,7 +50,7 @@ Go into the `~/.bashrc` file and add the following lines at the bottom:
 ```bash
 export CHROMIUMBUILD=/your/base/directory/for/build
 export ANDROID_SDK_ROOT=$CHROMIUMBUILD/Android/Sdk
-export PATH=$PATH:$CHROMIUMBUILD/Android/Sdk/build-tools/35.0.0:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$CHROMIUMBUILD/chromium/depot_tools
+export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$CHROMIUMBUILD/chromium/depot_tools
 export GCLIENT_SUPPRESS_GIT_VERSION_WARNING=1
 ```
 
